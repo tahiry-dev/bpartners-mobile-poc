@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { store } from './src/store';
 import { Header } from './src/components/Header';
 import { CashflowChart } from './src/components/CashflowChart';
+import { InvoiceForm } from './src/components/InvoiceForm';
 
 export default function App() {
   return (
@@ -12,7 +13,7 @@ export default function App() {
         <Header />
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <CashflowChart />
-          {/* Invoice form & list will go here */}
+          <InvoiceForm />
         </ScrollView>
       </View>
     </Provider>
