@@ -40,6 +40,27 @@ Follow these steps to run the application locally on your machine:
 Ensure you have **Node.js** (v16 or higher) and **npm** installed on your system.
 
 ### 2. Clone the Repository
-```bash
 git clone <YOUR_REPOSITORY_URL>
 cd <YOUR_REPOSITORY_DIRECTORY>
+
+### 3. Install Dependencies
+npm install
+
+### 4. Start the Application
+npm run web
+# or
+npx expo start --web
+
+### 5. Access the Web App
+Once the bundle is built, open your browser and navigate to:
+http://localhost:8081
+*(If port 8081 is in use, Expo will display the assigned local port in your terminal).*
+
+---
+
+## 📌 Note on Data Persistence
+
+This application is designed as an **ephemeral showcase**:
+* Invoices and leads are managed in the **Redux Store (In-Memory)**.
+* Refreshing the browser page resets the application state to default demo data.
+* *Future Roadmap: Integration with REST APIs, Supabase, Firebase, or persistent local storage (`AsyncStorage`) can be added in subsequent iterations.*
