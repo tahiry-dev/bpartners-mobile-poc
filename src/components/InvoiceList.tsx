@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { downloadInvoicePDF, sendInvoiceEmail } from '../utils/pdfGenerator';
+import { downloadInvoicePDF } from '../utils/pdfGenerator';
 
 export const InvoiceList: React.FC = () => {
   const { list } = useSelector((state: RootState) => state.invoices);
@@ -106,16 +106,8 @@ export const InvoiceList: React.FC = () => {
             ))}
           </View>
 
-          {/* Action Buttons */}
+          {/* Action Button */}
           <View style={styles.actionsRow}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={[styles.actionButton, styles.emailButton]}
-              onPress={() => sendInvoiceEmail(invoice)}
-            >
-              <Text style={styles.emailButtonText}>✉️ Send by Email</Text>
-            </TouchableOpacity>
-
             <TouchableOpacity
               activeOpacity={0.8}
               disabled={loadingInvoiceId === invoice.id}
@@ -236,32 +228,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   actionsRow: {
-    flexDirection: 'row',
-    gap: 8,
     marginTop: 16,
   },
   actionButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 6,
+    width: '100%',
+    paddingVertical: 10,
+    borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
-  },
-  emailButton: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
-  },
-  emailButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   downloadButton: {
     backgroundColor: '#F3F4F6',
     borderColor: '#E5E7EB',
   },
   downloadButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: '#374151',
   },
