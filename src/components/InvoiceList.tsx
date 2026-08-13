@@ -1,10 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { downloadInvoicePDF, sendInvoiceEmail } from '../utils/pdfGenerator';
 
 export const InvoiceList: React.FC = () => {
   const { list } = useSelector((state: RootState) => state.invoices);
+  const [loadingInvoiceId, setLoadingInvoiceId] = useState<string | null>(null);
+
+  const handleDownload = async (invoice: any) => {
+    try {
+      setLoadingInvoiceId(invoice.id);
+      await downloadInvoicePDF(invoice);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    } finally {
+      setLoadingInvoiceId(null);
+    }
+  };
 
   if (list.length === 0) {
     return (
@@ -91,6 +104,30 @@ export const InvoiceList: React.FC = () => {
                 </View>
               </View>
             ))}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[styles.actionButton, styles.emailButton]}
+              onPress={() => sendInvoiceEmail(invoice)}
+            >
+              <Text style={styles.emailButtonText}>✉️ Send by Email</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              disabled={loadingInvoiceId === invoice.id}
+              style={[styles.actionButton, styles.downloadButton]}
+              onPress={() => handleDownload(invoice)}
+            >
+              {loadingInvoiceId === invoice.id ? (
+                <ActivityIndicator size="small" color="#374151" />
+              ) : (
+                <Text style={styles.downloadButtonText}>⬇️ Download PDF</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       ))}
@@ -197,5 +234,35 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontWeight: '500',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  emailButton: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  emailButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  downloadButton: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+  },
+  downloadButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
   },
 });
