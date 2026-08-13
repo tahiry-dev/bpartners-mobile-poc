@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Provider } from 'react-redux';
 import { store } from './src/store';
+import { MobileContainer } from './src/components/MobileContainer';
 import { Header } from './src/components/Header';
 import { CashflowChart } from './src/components/CashflowChart';
 import { InvoiceForm } from './src/components/InvoiceForm';
@@ -10,14 +11,19 @@ import { InvoiceList } from './src/components/InvoiceList';
 export default function App() {
   return (
     <Provider store={store}>
-      <View style={styles.container}>
-        <Header />
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <CashflowChart />
-          <InvoiceForm />
-          <InvoiceList />
-        </ScrollView>
-      </View>
+      <MobileContainer>
+        <View style={styles.container}>
+          <Header />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <CashflowChart />
+            <InvoiceForm />
+            <InvoiceList />
+          </ScrollView>
+        </View>
+      </MobileContainer>
     </Provider>
   );
 }
