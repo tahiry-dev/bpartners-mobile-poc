@@ -1,20 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, SafeAreaView } from 'react-native';
+import { Provider } from 'react-redux';
+import { store } from './src/store';
+import { Header } from './src/components/Header';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <Header />
+          {/* Main components (Cashflow chart & Invoice form) will go here */}
+        </View>
+      </SafeAreaView>
+    </Provider>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
   },
 });
