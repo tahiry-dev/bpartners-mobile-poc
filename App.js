@@ -5,6 +5,7 @@ import { store } from './src/store';
 import { Header } from './src/components/Header';
 import { CashflowChart } from './src/components/CashflowChart';
 import { InvoiceForm } from './src/components/InvoiceForm';
+import { InvoiceList } from './src/components/InvoiceList';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <CashflowChart />
           <InvoiceForm />
+          <InvoiceList />
         </ScrollView>
       </View>
     </Provider>
