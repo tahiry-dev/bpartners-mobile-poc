@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   phoneFrame: {
     width: '100%',
-    maxWidth: 410,
+    maxWidth: 375,
     height: '90vh' as any, // Hauteur adaptable pour ne pas dépasser de l'écran
     maxHeight: 820,
     backgroundColor: '#1E293B', // Bordure sombre du châssis

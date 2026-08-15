@@ -1,180 +1,202 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { addInvoice } from '../store/invoicesSlice';
-import { incrementPendingSync } from '../store/offlineSlice';
 import { Invoice, Installment } from '../types';
 
 export const InvoiceForm: React.FC = () => {
   const dispatch = useDispatch();
-  const { isOnline } = useSelector((state: RootState) => state.offline);
-
+  const [isOpen, setIsOpen] = useState(false);
   const [clientName, setClientName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [downPaymentPercent, setDownPaymentPercent] = useState('30'); // Default 30% upfront
+  const [totalAmount, setTotalAmount] = useState('');
+  const [upfrontPercentage, setUpfrontPercentage] = useState('30');
 
-  const handleCreateInvoice = () => {
-    const totalAmount = parseFloat(amount);
-
-    if (!clientName.trim() || isNaN(totalAmount) || totalAmount <= 0) {
-      alert('Please fill in a valid client name and total amount.');
+  const handleSubmit = () => {
+    if (!clientName || !totalAmount) {
+      alert('Veuillez remplir le nom du client et le montant total.');
       return;
     }
 
-    const pct = Math.min(Math.max(parseFloat(downPaymentPercent) || 0, 0), 100);
-    const upfrontAmount = (totalAmount * pct) / 100;
-    const remainingAmount = totalAmount - upfrontAmount;
+    const total = parseFloat(totalAmount);
+    const upfrontPct = parseFloat(upfrontPercentage) || 30;
 
-    // Generate invoice installments
+    const upfrontAmount = (total * upfrontPct) / 100;
+    const remainingAmount = total - upfrontAmount;
+
     const installments: Installment[] = [
       {
         id: `inst-${Date.now()}-1`,
         dueDate: new Date().toISOString().split('T')[0],
-        percentage: pct,
+        percentage: upfrontPct,
         amount: upfrontAmount,
         status: 'PAID',
       },
-    ];
-
-    if (pct < 100) {
-      const nextMonth = new Date();
-      nextMonth.setDate(nextMonth.getDate() + 30);
-      installments.push({
+      {
         id: `inst-${Date.now()}-2`,
-        dueDate: nextMonth.toISOString().split('T')[0],
-        percentage: 100 - pct,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0],
+        percentage: 100 - upfrontPct,
         amount: remainingAmount,
         status: 'PENDING',
-      });
-    }
+      },
+    ];
 
-    // New invoice object
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}`,
-      clientName: clientName.trim(),
-      totalAmount,
+      clientName,
+      totalAmount: total,
       createdAt: new Date().toISOString(),
-      syncStatus: isOnline ? 'SYNCED' : 'PENDING_SYNC',
+      syncStatus: 'SYNCED',
       installments,
     };
 
-    // Dispatch actions
     dispatch(addInvoice(newInvoice));
 
-    if (!isOnline) {
-      dispatch(incrementPendingSync());
-    }
-
-    // Reset form fields
+    // Reset form and close it
     setClientName('');
-    setAmount('');
+    setTotalAmount('');
+    setUpfrontPercentage('30');
+    setIsOpen(false);
   };
+
+  if (!isOpen) {
+    return (
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.toggleButton}
+          onPress={() => setIsOpen(true)}
+        >
+          <Text style={styles.toggleButtonText}>➕ Créer une Facture Manuelle</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Create New Invoice</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Créer une Facture Manuelle</Text>
+        <TouchableOpacity onPress={() => setIsOpen(false)}>
+          <Text style={styles.closeText}>✕ Fermer</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Client Name Input */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Client Name</Text>
+        <Text style={styles.label}>Nom du Client</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Acme Corp"
           value={clientName}
           onChangeText={setClientName}
+          placeholder="e.g. Acme Corp"
         />
       </View>
 
-      {/* Total Amount Input */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Total Amount (€)</Text>
+        <Text style={styles.label}>Montant Total (€)</Text>
         <TextInput
           style={styles.input}
+          value={totalAmount}
+          keyboardType="numeric"
+          onChangeText={setTotalAmount}
           placeholder="e.g. 5000"
-          keyboardType="numeric"
-          value={amount}
-          onChangeText={setAmount}
         />
       </View>
 
-      {/* Payment Schedule Option */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Upfront Down Payment (%)</Text>
+        <Text style={styles.label}>Acompte (%)</Text>
         <TextInput
           style={styles.input}
-          placeholder="30"
+          value={upfrontPercentage}
           keyboardType="numeric"
-          value={downPaymentPercent}
-          onChangeText={setDownPaymentPercent}
+          onChangeText={setUpfrontPercentage}
+          placeholder="30"
         />
       </View>
 
-      {/* Submit Button */}
       <TouchableOpacity
         activeOpacity={0.8}
-        style={[styles.button, { backgroundColor: isOnline ? '#2563EB' : '#D97706' }]}
-        onPress={handleCreateInvoice}
+        style={styles.submitButton}
+        onPress={handleSubmit}
       >
-        <Text style={styles.buttonText}>
-          {isOnline ? 'Create Invoice' : 'Save Locally (Offline)'}
-        </Text>
+        <Text style={styles.submitButtonText}>Enregistrer la Facture</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  toggleContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  toggleButton: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  toggleButtonText: {
+    color: '#2563EB',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   card: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
     marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  inputGroup: {
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  label: {
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  closeText: {
     fontSize: 12,
+    color: '#6B7280',
+  },
+  inputGroup: {
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 11,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   input: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
     color: '#111827',
     backgroundColor: '#FAFAFA',
   },
-  button: {
-    marginTop: 8,
-    paddingVertical: 12,
+  submitButton: {
+    marginTop: 6,
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
-  buttonText: {
+  submitButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 });

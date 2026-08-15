@@ -17,7 +17,8 @@ export default function App() {
     <Provider store={store}>
       <MobileContainer>
         <View style={styles.container}>
-          <Header />
+          {/* Header avec flèches de navigation */}
+          <Header activeTab={activeTab} onNavigate={(tab) => setActiveTab(tab)} />
 
           {/* Tab Content */}
           <View style={styles.content}>
@@ -31,7 +32,7 @@ export default function App() {
                 <InvoiceList />
               </ScrollView>
             ) : (
-              <LeadMatcher />
+              <LeadMatcher onNavigateToCashflow={() => setActiveTab('cashflow')} />
             )}
           </View>
 

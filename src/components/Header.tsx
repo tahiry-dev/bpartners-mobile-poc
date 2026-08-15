@@ -1,113 +1,89 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store';
-import { setNetworkStatus, clearPendingSync } from '../store/offlineSlice';
-import { syncPendingInvoices } from '../store/invoicesSlice';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export const Header: React.FC = () => {
-  const dispatch = useDispatch();
-  const { isOnline, pendingSyncCount } = useSelector((state: RootState) => state.offline);
+interface HeaderProps {
+  activeTab?: 'cashflow' | 'leads';
+  onNavigate?: (tab: 'cashflow' | 'leads') => void;
+}
 
-  // Toggle simulated network status and auto-sync when back online
-  const handleToggleNetwork = () => {
-    const nextStatus = !isOnline;
-    dispatch(setNetworkStatus(nextStatus));
-
-    // Auto-sync pending invoices when switching back to online mode
-    if (nextStatus && pendingSyncCount > 0) {
-      dispatch(syncPendingInvoices());
-      dispatch(clearPendingSync());
-    }
-  };
-
+export const Header: React.FC<HeaderProps> = ({ activeTab = 'cashflow', onNavigate }) => {
   return (
-    <View style={styles.container}>
-      {/* App Title */}
-      <View>
-        <Text style={styles.title}>Bpartners</Text>
-        <Text style={styles.subtitle}>Cashflow & Invoicing</Text>
-      </View>
+    <View style={styles.headerContainer}>
+      <View style={styles.navRow}>
+        {/* Bouton Précédent */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          disabled={activeTab === 'cashflow'}
+          style={[styles.arrowButton, activeTab === 'cashflow' && styles.disabledArrow]}
+          onPress={() => onNavigate?.('cashflow')}
+        >
+          <Text style={styles.arrowText}>◄</Text>
+        </TouchableOpacity>
 
-      {/* Network Status Toggle Button */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={handleToggleNetwork}
-        style={[
-          styles.badge,
-          { backgroundColor: isOnline ? '#DCFCE7' : '#FEE2E2' },
-        ]}
-      >
-        <View
-          style={[
-            styles.dot,
-            { backgroundColor: isOnline ? '#16A34A' : '#DC2626' },
-          ]}
-        />
-        <Text style={[styles.badgeText, { color: isOnline ? '#15803D' : '#B91C1C' }]}>
-          {isOnline ? 'Online' : 'Offline'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Pending Sync Indicator */}
-      {pendingSyncCount > 0 && (
-        <View style={styles.syncContainer}>
-          <Text style={styles.syncText}>
-            {pendingSyncCount} pending sync{pendingSyncCount > 1 ? 's' : ''}
+        {/* Brand Title */}
+        <View style={styles.titleBox}>
+          <Text style={styles.brandTitle}>Bpartners</Text>
+          <Text style={styles.subtitle}>
+            {activeTab === 'cashflow' ? '📊 Cashflow & Invoicing' : '🎯 IA Lead Matcher'}
           </Text>
         </View>
-      )}
+
+        {/* Bouton Suivant */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          disabled={activeTab === 'leads'}
+          style={[styles.arrowButton, activeTab === 'leads' && styles.disabledArrow]}
+          onPress={() => onNavigate?.('leads')}
+        >
+          <Text style={styles.arrowText}>►</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 48,
-    paddingBottom: 16,
+  headerContainer: {
     backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#E5E7EB',
+  },
+  navRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
+  arrowButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledArrow: {
+    backgroundColor: '#F3F4F6',
+    opacity: 0.4,
+  },
+  arrowText: {
+    fontSize: 12,
+    color: '#2563EB',
+    fontWeight: 'bold',
+  },
+  titleBox: {
+    alignItems: 'center',
+  },
+  brandTitle: {
+    fontSize: 18,
+    fontWeight: '800',
     color: '#111827',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  syncContainer: {
-    position: 'absolute',
-    bottom: 4,
-    left: 20,
-  },
-  syncText: {
-    fontSize: 10,
-    color: '#D97706',
-    fontWeight: '500',
+    marginTop: 1,
   },
 });
